@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathVoice - Informative Search</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es20/tex-mml-chtml.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; text-align: center; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        #search-bar { width: 70%; padding: 15px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 30px; outline: none; transition: 0.3s; }
+        #search-bar:focus { border-color: #007bff; }
+        #mic-btn { padding: 15px 25px; font-size: 1.1rem; border-radius: 30px; border: none; background-color: #007bff; color: white; cursor: pointer; margin-left: 10px; }
+        #mic-btn.listening { background-color: #ff4757; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #results { margin-top: 40px; text-align: left; padding: 20px; border-top: 2px solid #eee; min-height: 200px; }
+        .formula-card { background: #f8f9fa; border-left: 5px solid #007bff; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📐INFIN8Y!!</h1>
+    <p>This website will help you find what formulas, tutorials, and flashcards type of quizzes you need about MATHEMATICS.</p>
+    
+    <input type="text" id="search-bar" placeholder="LISTENING...">
+    <button id="mic-btn">🎙</button>
+
+    <div id="results">
+        <p style="color: #888;">Wait for the results...</p>
+    </div>
+</div>
+
+<script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        alert("Hindi supported ang Speech Recognition sa browser na ito. Gamitin ang Chrome o Edge.");
+    }
+
+    const recognition = new SpeechRecognition();
+    const micBtn = document.getElementById('mic-btn');
+    const searchBar = document.getElementById('search-bar');
+    const resultsDiv = document.getElementById('results');
+
+ // MGA NILALAMAN NG WEBSITE (DATABASE) - FIXED VERSION
+    const mathData = {
+        "trigonometry": `
+            <div class="formula-card">
+                <h3>Trigonometry</h3>
+                <p><b>DEFINITION:</b> The branch of mathematics that studies the relationships between the side lengths and angles of triangles.</p>
+                <p><a href="https://www.mathsisfun.com/algebra/trigonometry.html" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/watch?v=g8VCHoSk5_o&list=PL0o_zxa4K1BVCB8iCVCGOES9pEF6byTMT" target="_blank">To watch the tutorials, check this out.</a></p>
+            </div>`,
+        "geometry": `
+            <div class="formula-card">
+                <h3>Geometry</h3>
+                <p><b>DEFINITION:</b> The branch of mathematics that deals with the properties, measurement, and relationships of points, lines, angles, surfaces, and solids.</p>
+                <p><a href="https://www.mathsisfun.com/geometry/index.html" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/watch?v=KtZai86htng&list=PL0o_zxa4K1BVkRxCZubMPcCJ5Q5QwZdEM" target="_blank">To watch the tutorials, check this out.</a></p>
+            </div>`,
+        "algebra": `
+            <div class="formula-card">
+                <h3>Algebra</h3>
+                <p><b>DEFINITION:</b> Algebra is the branch of mathematics where we use letters and symbols to represent numbers and quantities in formulae and equations.</p>
+                <p><a href="https://www.mathsisfun.com/algebra/index-college.html" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/watch?v=MHeirBPOI6w&list=PL0o_zxa4K1BUeF2o-MlNpbRiS-oE2Kn6J" target="_blank">To watch the tutorials, check this out.</a></p>
+           </div>`,
+        "statistics and probability": `
+            <div class="formula-card">
+                <h3>Statistics and Probability</h3>
+                <p><b>DEFINITION:</b> Probability predicts the likelihood of future events based on a known model, while Statistics analyzes past data to create a model or reach a conclusion.</p>
+                <p><a href="https://www.mathsisfun.com/data/index.html" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/playlist?list=PLMrJAkhIeNNR3sNYvfgiKgcStwuPSts9V" target="_blank">To watch the tutorials, check this out.</a></p>
+            </div>`,
+        "integral calculus": `
+            <div class="formula-card">
+                <h3>Integral Calculus</h3>
+                <p><b>DEFINITION:</b> A branch of calculus focused on accumulation and the finding of quantities such as areas, volumes, and total distances.</p>
+                <p><a href="https://www.mathsisfun.com/calculus/index.html" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/watch?v=VXtV50HrlSU&list=PL_NkZ6-1skgn3jRcPbtgJ5gX3i03yb_6I" target="_blank">To watch the tutorials, check this out.</a></p>
+            </div>`,
+        "differential calculus": `
+            <div class="formula-card">
+                <h3>Differential Calculus</h3>
+                <p><b>DEFINITION:</b> The subfield of calculus that focuses on the concept of the derivative and instantaneous change.</p>
+                <p><a href="https://www.mathsisfun.com/calculus/index.html" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/playlist?list=PL_NkZ6-1skgle8zLkS3wyrjmpLg0E2LFn" target="_blank">To watch the tutorials, check this out.</a></p>
+            </div>`,
+        "logic and set theory": `
+            <div class="formula-card">
+                <h3>Logic and Set Theory</h3>
+                <p><b>DEFINITION:</b> Logic and Set Theory deal with the very foundation of mathematical thought and the "rules of the game" for proofs.</p>
+                <p><a href="https://www.geeksforgeeks.org/maths/set-theory/" target="_blank">To view the formulas, check this out.</a></p>
+                <p><a href="https://www.youtube.com/watch?v=usjOF3eHhHs&list=PLPgKBibhNh73rAqxIaltEHw-qwMJISwOL" target="_blank">To watch the tutorials, check this out.</a></p>
+            </div>`
+    };
+
+    micBtn.onclick = () => {
+        recognition.start();
+        micBtn.classList.add('listening');
+        micBtn.innerText = "Listening...";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        searchBar.value = transcript;
+        micBtn.classList.remove('listening');
+        micBtn.innerText = "🎙";
+        showResults(transcript);
+    };
+
+    recognition.onerror = () => {
+        micBtn.classList.remove('listening');
+        micBtn.innerText = "🎙";
+    };
+
+    function showResults(query) {
+        let found = false;
+        resultsDiv.innerHTML = ""; 
+
+        for (let key in mathData) {
+            // Ginawang lowercase ang key para siguradong mag-match
+            if (query.includes(key.toLowerCase())) {
+                resultsDiv.innerHTML += mathData[key];
+                found = true;
+            }
+        }
+
+        if (!found) {
+            resultsDiv.innerHTML = "<p>Can't find '" + query + "'. Please try again.</p>";
+        }
+
+        if (window.MathJax) {
+            MathJax.typeset();
+        }
+    }
+</script>
+
+<hr style="margin-top: 50px; border: 0; border-top: 1px solid #eee;">
+<footer style="font-size: 0.8rem; color: #777; margin-top: 20px;">
+    <p>© 2026 Math-alino - INFIN8Y Project</p>
+    <p><i>Disclaimer: External links and video tutorials are properties of their respective owners (MathsIsFun, GeeksforGeeks, and various YouTube creators). This platform is for educational use only.</i></p>
+</footer>
+
+</body>
+</html>
